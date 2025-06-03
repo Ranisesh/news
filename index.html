@@ -27,7 +27,7 @@
     <p id="newsText">Loading news...</p>
 
     <script>
-        const pdfUrl = "news.pdf"; // Add your news.pdf file in the same folder
+        const pdfUrl = "news.pdf"; // Ensure news.pdf is in the same folder
         let speechSynthesisInstance;
         let textToRead = "";
 
@@ -38,10 +38,14 @@
         function loadPDF(url) {
             const loadingTask = pdfjsLib.getDocument(url);
             loadingTask.promise.then(pdf => {
-                pdf.getPage(1).then(page => {
-                    return page.getTextContent();
-                }).then(textContent => {
-                    textToRead = textContent.items.map(item => item.str).join(" ");
+                let pagesPromises = [];
+
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    pagesPromises.push(pdf.getPage(i).then(page => page.getTextContent()));
+                }
+
+                Promise.all(pagesPromises).then(pagesText => {
+                    textToRead = pagesText.map(page => page.items.map(item => item.str).join(" ")).join("\n\n");
                     document.getElementById("newsText").innerText = textToRead;
                 });
             });
