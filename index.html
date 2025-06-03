@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News Bulletin Reader</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+        }
+        button {
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>News Bulletin</h1>
+    <button id="startBtn">Start Reading</button>
+    <button id="pauseBtn">Pause</button>
+    <button id="resumeBtn">Resume</button>
+    <p id="newsText">Loading news...</p>
+
+    <script>
+        const pdfUrl = "news.pdf"; // Add your news.pdf file in the same folder
+        let speechSynthesisInstance;
+        let textToRead = "";
+
+        document.addEventListener("DOMContentLoaded", function () {
+            loadPDF(pdfUrl);
+        });
+
+        function loadPDF(url) {
+            const loadingTask = pdfjsLib.getDocument(url);
+            loadingTask.promise.then(pdf => {
+                pdf.getPage(1).then(page => {
+                    return page.getTextContent();
+                }).then(textContent => {
+                    textToRead = textContent.items.map(item => item.str).join(" ");
+                    document.getElementById("newsText").innerText = textToRead;
+                });
+            });
+        }
+
+        function startReading() {
+            speechSynthesisInstance = new SpeechSynthesisUtterance(textToRead);
+            speechSynthesisInstance.rate = 1;
+            speechSynthesisInstance.pitch = 1;
+            speechSynthesisInstance.lang = "en-US";
+
+            window.speechSynthesis.speak(speechSynthesisInstance);
+        }
+
+        function pauseReading() {
+            window.speechSynthesis.pause();
+        }
+
+        function resumeReading() {
+            window.speechSynthesis.resume();
+        }
+
+        document.getElementById("startBtn").addEventListener("click", startReading);
+        document.getElementById("pauseBtn").addEventListener("click", pauseReading);
+        document.getElementById("resumeBtn").addEventListener("click", resumeReading);
+    </script>
+</body>
+</html>
